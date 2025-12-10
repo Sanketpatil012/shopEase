@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="carousel-container" *ngIf="carouselItems.length > 0">
+    <div class="carousel">
+      <div class="slide-container" [routerLink]="'/product/' + carouselItems[currentSlide].productId">
+        <img [src]="carouselItems[currentSlide].image" [alt]="'Product image ' + (currentSlide + 1)"
+          class="carousel-image cursor-pointer" />
+      </div>
+
+      <button class="carousel-btn prev-btn" (click)="prevSlide()">
+        ‹
+      </button>
+      <button class="carousel-btn next-btn" (click)="nextSlide()">
+        ›
+      </button>
+
+      <div class="indicators">
+        <button *ngFor="let item of carouselItems ; let i = index " class="indicator"
+          [class.active]="i === currentSlide" (click)="goToSlide(i)">
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+    @if(!isSearch || featuredProduct.length > 0){
+  <section class="py-12">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Featured Products</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        *ngIf="featuredProduct.length > 0">
+        <app-product-card 
+          *ngFor="let product of featuredProduct"
+          [product]="product"
+          [showActions]="true"
+          (addToCart)="onAddToCart($event)"
+          (addToWishlist)="onAddToWishlist($event)">
+        </app-product-card>
+      </div>
+
+      <div *ngIf="featuredProduct.length === 0" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="text-gray-600 mt-4">Loading featured products...</p>
+      </div>
+    </div>
+  </section>
+      }@else {
+      <p>No product found...</p>
+    }
+
+  <section class="py-12 bg-white" *ngIf="newProduct.length > 0">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">New Products</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" *ngIf="newProduct.length > 0">
+        <app-product-card 
+          *ngFor="let product of newProduct"
+          [product]="product"
+          [showActions]="true"
+          (addToCart)="onAddToCart($event)"
+          (addToWishlist)="onAddToWishlist($event)">
+        </app-product-card>
+      </div>
+
+      <div *ngIf="newProduct.length === 0" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="text-gray-600 mt-4">Loading New products...</p>
+      </div>
+    </div>
+  </section>
+</div>
