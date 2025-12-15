@@ -7,7 +7,6 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { HeaderComponent } from "../header/header.component"; // Add this import
 import { ProductService } from '../../services/product.service';
 import { debounceTime} from 'rxjs';
-
 @Component({
   selector: 'app-home',
   imports: [CommonModule, RouterLink, ProductCardComponent], 
@@ -171,14 +170,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.carouselItems[this.currentSlide]?.productId;
   }
 
-  // Add event handlers for product card actions
   onAddToCart(product: Product): void {
     console.log('Add to cart:', product);
-    // Implement add to cart logic here
   }
 
   onAddToWishlist(product: Product): void {
     console.log('Add to wishlist:', product);
-    // Implement add to wishlist logic here
   }
 }

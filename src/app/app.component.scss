@@ -13,3 +13,36 @@
   width: 100%;
 }
 
+
+.carousel-image {
+  will-change: transform;
+}
+
+/* Glow effect for featured products */
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+  50% { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15); }
+}
+
+.group:hover .product-card {
+  animation: subtle-glow 2s ease-in-out infinite;
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+  .carousel-image {
+    aspect-ratio: 16/9;
+  }
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
