@@ -1,34 +1,63 @@
+import { Category } from './../../type/category';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Product } from '../../type/product';
 import { CustomerService } from '../../services/customer.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
-import { HeaderComponent } from "../header/header.component"; // Add this import
+import { HeaderComponent } from '../header/header.component'; // Add this import
 import { ProductService } from '../../services/product.service';
-import { debounceTime} from 'rxjs';
+import { debounceTime } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
+import { CategoryService } from '../../services/category.service';
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, ProductCardComponent], 
+  imports: [CommonModule, RouterLink, ProductCardComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
-}) 
+})
 export class HomeComponent implements OnInit, OnDestroy {
   newProduct: Product[] = [];
   copyNewProduct: string = '';
   featuredProduct: Product[] = [];
   copyFeaturedProduct: string = '';
-  isSearch:boolean = false;
-
+  isSearch: boolean = false;
+  public selectedCategory: string | null = null;
+  newCategory: string = '';
   carouselItems: { image: string; productId: number }[] = [];
   currentSlide = 0;
   private carouselInterval: any;
+  categoryProduct: Product[] = [];
+  selectedCategoryName : string = ''
 
-  constructor(private customerService: CustomerService,private productService:ProductService) {}
+  constructor(
+    private customerService: CustomerService,
+    private productService: ProductService,
+    private router: Router,
+    private route: ActivatedRoute ,
+    private categoryService : CategoryService
+  ) {}
 
   ngOnInit(): void {
-    this.loadNewProducts();
-    this.loadFeaturedProducts();
+    this.route.queryParams.subscribe((params) => {
+      const categoryId = params['category'];
+      const categoryName = params['categoryName']
+      if (categoryId) {
+        this.selectedCategory = categoryId;
+         this.selectedCategoryName=categoryName
+        this.loadProductsByCategory(categoryId);
+      
+      } else {
+        this.selectedCategory = null;
+        this.loadNewProducts();
+        this.loadFeaturedProducts();
+      }
+    });
+     
+
+    
+  
+   
     this.productService.searchTerm
       .pipe(debounceTime(500))
       .subscribe((value) => {
@@ -37,7 +66,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.newProduct = JSON.parse(this.copyNewProduct);
           this.featuredProduct = JSON.parse(this.copyFeaturedProduct);
         } else {
-          this.isSearch = true; 
+          this.isSearch = true;
           const filterProducts = (cloneProduct: any) => {
             const cloneProductArray = JSON.parse(cloneProduct);
             return cloneProductArray.filter((filter: any) => {
@@ -45,7 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                 filter.name,
                 filter.shortDescription,
                 filter.price,
-                filter.actualPrice
+                filter.actualPrice,
               ];
               return tempObj
                 .toString()
@@ -64,15 +93,27 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopCarousel();
   }
-
+  loadProductsByCategory(categoryId: string): void {
+     this.featuredProduct =[]
+     this.newProduct=[]
+    
+    this.productService.getProductByCategory(categoryId).subscribe({
+      next: (res: any) => {
+        this.categoryProduct = res.product;
+      },
+      error: (error) => {
+        console.log('Error while fetching the products ', error);
+      },
+    });
+  }
   loadNewProducts(): void {
     this.customerService.getNewProducts().subscribe({
       next: (res: Product[]) => {
         this.newProduct = res;
-        this.newProduct.forEach(ele =>{
+        this.newProduct.forEach((ele) => {
           ele.actualPrice = ele.price - ele.discount;
-        })
-        this.copyNewProduct = JSON.stringify(this.newProduct)
+        });
+        this.copyNewProduct = JSON.stringify(this.newProduct);
         this.setupCarousel();
         console.log('New products:', this.newProduct);
       },
@@ -86,10 +127,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.customerService.getFeaturedProducts().subscribe({
       next: (res: Product[]) => {
         this.featuredProduct = res;
-        this.featuredProduct.forEach(ele =>{
+        this.featuredProduct.forEach((ele) => {
           ele.actualPrice = ele.price - ele.discount;
-        })
-        this.copyFeaturedProduct = JSON.stringify(this.featuredProduct)
+        });
+        this.copyFeaturedProduct = JSON.stringify(this.featuredProduct);
         this.setupCarousel();
         console.log('Featured products:', this.featuredProduct);
       },

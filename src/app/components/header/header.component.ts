@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy , EventEmitter, Output  } from '@angular/core';
 import { CustomerService } from '../../services/customer.service';
 import { Category } from '../../type/category';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -15,18 +16,28 @@ import { ProductService } from '../../services/product.service';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  @Output() categorySelected  = new EventEmitter<string>()
+  
   categoryList: Category[] = [];
   userName: any = '';
   private authSubscription!: Subscription;
   isLoggedIn: boolean = false;
   private categoriesLoaded: boolean = false;
+  showMobileMenu: boolean = false;
+  showMobileSearch: boolean = false;
+
   SearchTerm!:string
   constructor(
     private customerService: CustomerService,
     private route: Router,
     public auth_Service: AuthService,
     private productService:ProductService
-  ) {}
+  ) {  
+    this.route.events.subscribe(() => {
+    this.showMobileMenu = false;
+    this.showMobileSearch = false;
+  });
+  }
 
   ngOnInit(): void {
     this.isLoggedIn = this.auth_Service.isLoggedIn();
@@ -58,7 +69,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.authSubscription.unsubscribe();
     }
   }
+   
+  // Method to toggle mobile menu
+toggleMobileMenu(): void {
+  this.showMobileMenu = !this.showMobileMenu;
+}
 
+// Method to toggle mobile search
+toggleMobileSearch(): void {
+  this.showMobileSearch = !this.showMobileSearch;
+}
+
+// Method to get user initials for avatar
+getUserInitials(): string {
+  const userName = this.getUserName();
+  if (!userName) return 'U';
+  
+  return userName
+    .split(' ')
+    .map(part => part.charAt(0))
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+}
   getCategory() {
     // Prevent multiple calls if already loading
     if (this.categoriesLoaded) return;
@@ -93,8 +126,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.productService.searchTerm.next(e.target?.value || '')
   }
 
-  searchByCategory(id: string) {
-     this.SearchTerm=""
-    this.route.navigate(['products'], { queryParams: { categoryId: id } });
+  onCategoryClick(categoryList: any):void  {
+      this.route.navigate(['/']  , {queryParams:{category:categoryList._id  , categoryName:categoryList.name}})
   }
 }

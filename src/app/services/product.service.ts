@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Product } from '../type/product';
 import { Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 
 
 @Injectable({
@@ -37,5 +38,10 @@ getNewProducts() {
 
 getFeaturedProducts() {
   return this.http.get(`${environment.apiUrl}/product/home/featured-products`); 
+}
+getProductByCategory(categoryId: string) {
+ 
+  return this.http.get<{products: Product[]}>(`${environment.apiUrl}/product/category/${categoryId}`);
+ 
 }
 }
