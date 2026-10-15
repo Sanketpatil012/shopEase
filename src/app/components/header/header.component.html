@@ -1,3 +1,4 @@
+<!-- components/header/header.component.html -->
 <header class="shadow-md bg-gradient-to-r from-blue-600 to-blue-800 text-white" *ngIf="auth_Service.isLoggedIn()">
   <!-- Top Bar -->
   <div class="container mx-auto px-4 py-3">
@@ -5,19 +6,12 @@
       <!-- Logo Section -->
       <div class="flex items-center space-x-3">
         <!-- Hamburger Menu (Mobile Only) -->
-        <button 
-          class="md:hidden text-2xl focus:outline-none"
-          (click)="toggleMobileMenu()"
-          aria-label="Toggle menu"
-        >
+        <button class="md:hidden text-2xl focus:outline-none" (click)="toggleMobileMenu()" aria-label="Toggle menu">
           ☰
         </button>
-        
+
         <!-- Logo -->
-        <a 
-          routerLink="/" 
-          class="text-2xl font-bold text-white hover:text-blue-200 transition-colors duration-200"
-        >
+        <a routerLink="/" class="text-2xl font-bold text-white hover:text-blue-200 transition-colors duration-200">
           Shop<span class="text-yellow-300">Ease</span>
         </a>
       </div>
@@ -25,20 +19,12 @@
       <!-- Search Bar (Hidden on mobile, visible on medium+) -->
       <div class="hidden md:flex flex-1 max-w-xl mx-6">
         <div class="relative w-full">
-          <input 
-            type="text" 
-            placeholder="Search for products..." 
-            (input)="onSearch($event)" 
-            [(ngModel)]="SearchTerm"
-            class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-800"
-          />
-          <svg 
-            class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <input type="text" placeholder="Search for products..." (input)="onSearch($event)" [(ngModel)]="SearchTerm"
+            class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-800" />
+          <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
       </div>
@@ -46,71 +32,171 @@
       <!-- User Actions -->
       <div class="flex items-center space-x-4">
         <!-- Mobile Search Icon -->
-        <button 
-          class="md:hidden text-xl"
-          (click)="toggleMobileSearch()"
-          aria-label="Search"
-        >
+        <button class="md:hidden text-xl" (click)="toggleMobileSearch()" aria-label="Search">
           🔍
         </button>
-        
+
+        <!-- Cart Icon with Badge -->
+        <div class="relative">
+          <button (click)="toggleCartDropdown($event)"
+            class="relative p-2 hover:bg-blue-500 rounded-lg transition-colors duration-200 focus:outline-none"
+            aria-label="Shopping Cart">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+
+            <!-- Cart Badge -->
+            @if(cartItemCount > 0) {
+            <span
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
+              {{cartItemCount > 9 ? '9+' : cartItemCount}}
+            </span>
+            }
+          </button>
+
+          <!-- Cart Dropdown -->
+          @if(showCartDropdown) {
+          <div class="fixed inset-0 z-40" (click)="closeCartDropdown()"></div>
+          <div
+            class="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-50 border border-gray-100 overflow-hidden animate-slideDown">
+            <!-- Cart Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3">
+              <h3 class="text-white font-semibold text-lg">My Cart</h3>
+              <p class="text-blue-100 text-sm">{{cartItemCount}} item(s) in your cart</p>
+            </div>
+
+            <!-- Cart Items -->
+            <div class="max-h-40 overflow-y-auto">
+              @if(cartItems.length > 0) {
+              @for(item of cartItems; track item.product._id) {
+              <div class="flex gap-3 p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <!-- Product Image -->
+                <img [src]="item.product.image[0]" [alt]="item.product.name" class="w-16 h-16 object-cover rounded-lg">
+
+                <!-- Product Details -->
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-800 text-sm line-clamp-2">{{item.product.name}}</h4>
+                  <p class="text-blue-600 font-bold mt-1">₹{{getFinalPrice(item.product) | number}}</p>
+
+                  <div class="flex items-center gap-2 mt-2">
+                    <!-- Quantity Controls -->
+                    <div class="flex items-center border rounded-lg">
+                      <button (click)="updateCartQuantity(item.product._id, item.quantity - 1)"
+                        class="px-2 py-1 text-gray-600 hover:bg-gray-100 transition-colors">
+                        -
+                      </button>
+                      <span class="w-10 text-black  text-center text-sm">{{item.quantity}}</span>
+                      <button (click)="updateCartQuantity(item.product._id, item.quantity + 1)"
+                        class="px-2 py-1 text-gray-600 hover:bg-gray-100 transition-colors">
+                        +
+                      </button>
+                    </div>
+
+                    <!-- Remove Button -->
+                    <button (click)="removeFromCart(item.product._id)" class="text-red-500 hover:text-red-700 text-sm">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Item Total -->
+                <div class="text-right">
+                  <p class="font-semibold text-gray-800">
+                    ₹{{getFinalPrice(item.product) * item.quantity | number}}
+                  </p>
+                  @if(item.product.discount > 0) {
+                  <p class="text-xs text-green-600">Saved ₹{{item.product.discount * item.quantity | number}}</p>
+                  }
+                </div>
+              </div>
+              }
+              } @else {
+              <!-- Empty Cart -->
+              <div class="text-center py-8">
+                <svg class="w-16 h-16 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-gray-500">Your cart is empty</p>
+                <p class="text-gray-400 text-sm mt-1">Add items to get started</p>
+              </div>
+              }
+            </div>
+
+            <!-- Cart Footer -->
+            @if(cartItems.length > 0) {
+            <div class="border-t border-gray-200 p-4 bg-gray-50">
+              <div class="flex justify-between mb-3">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-semibold text-gray-800">₹{{cartTotalAmount | number}}</span>
+              </div>
+              <div class="flex justify-between mb-4 text-sm text-gray-500">
+                <span>Shipping:</span>
+                <span>Free</span>
+              </div>
+              <div class="flex justify-between mb-4 pt-2 border-t border-gray-200">
+                <span class="font-bold text-gray-800">Total:</span>
+                <span class="font-bold text-blue-600 text-lg">₹{{cartTotalAmount | number}}</span>
+              </div>
+
+              <div class="space-y-2">
+                <button
+                  class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 font-semibold shadow-md">
+                  Proceed to Checkout
+                </button>
+                <button (click)="viewOrders()"
+                  class="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium">
+                  View Order History
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+
         <!-- User Profile -->
         <div class="hidden md:block">
-          <a 
-            [routerLink]="auth_Service.isAdmin() ? '/admin' : '/user-profile'" 
-            class="flex items-center space-x-2 hover:text-blue-200 font-medium transition-colors duration-200"
-          >
+          <a [routerLink]="auth_Service.isAdmin() ? '/admin' : '/user-profile'"
+            class="flex items-center space-x-2 hover:text-blue-200 font-medium transition-colors duration-200">
             <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
               <span class="font-bold">{{ getUserInitials() }}</span>
             </div>
             <span>{{ getUserName() }}</span>
           </a>
         </div>
-        
+
         <!-- Auth Buttons -->
         <div class="hidden md:flex items-center space-x-4">
           @if(auth_Service.isLoggedIn()) {
-            <button 
-              class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-colors duration-200"
-              (click)="logOut()"
-            >
-              Logout
-            </button>
+          <button class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-colors duration-200"
+            (click)="logOut()">
+            Logout
+          </button>
           } @else {
-            <a 
-              routerLink="/register" 
-              class="px-4 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg font-medium transition-colors duration-200"
-            >
-              Login
-            </a>
-            <a 
-              routerLink="/register" 
-              class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-medium transition-colors duration-200"
-            >
-              Register
-            </a>
+          <a routerLink="/register"
+            class="px-4 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg font-medium transition-colors duration-200">
+            Login
+          </a>
+          <a routerLink="/register"
+            class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-medium transition-colors duration-200">
+            Register
+          </a>
           }
         </div>
       </div>
     </div>
-    
+
     <!-- Mobile Search Bar (Conditional) -->
     <div class="mt-3 md:hidden" *ngIf="showMobileSearch">
       <div class="relative">
-        <input 
-          type="text" 
-          placeholder="Search for products..." 
-          (input)="onSearch($event)" 
-          [(ngModel)]="SearchTerm"
-          class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-800"
-        />
-        <svg 
-          class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        <input type="text" placeholder="Search for products..." (input)="onSearch($event)" [(ngModel)]="SearchTerm"
+          class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-800" />
+        <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
       </div>
     </div>
@@ -121,10 +207,8 @@
     <div class="container mx-auto px-4">
       <div class="flex flex-wrap justify-center md:justify-start space-x-4 lg:space-x-6">
         <div *ngFor="let category of categoryList">
-          <button 
-            class="px-3 py-1 hover:bg-blue-600 rounded-lg transition-colors duration-200 font-medium"
-            (click)="onCategoryClick(category)"
-          >
+          <button class="px-3 py-1 hover:bg-blue-600 rounded-lg transition-colors duration-200 font-medium"
+            (click)="onCategoryClick(category)">
             {{category.name}}
           </button>
         </div>
@@ -133,37 +217,49 @@
   </nav>
 
   <!-- Mobile Menu Overlay -->
-  <div 
-    class="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden transition-opacity duration-300"
-    [class.hidden]="!showMobileMenu"
-    (click)="toggleMobileMenu()"
-  ></div>
-  
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden transition-opacity duration-300"
+    [class.hidden]="!showMobileMenu" (click)="toggleMobileMenu()"></div>
+
   <!-- Mobile Menu Panel -->
-  <div 
-    class="fixed top-0 left-0 h-full w-64 bg-blue-800 z-50 transform transition-transform duration-300 md:hidden"
-    [class.translate-x-0]="showMobileMenu"
-    [class.-translate-x-full]="!showMobileMenu"
-  >
+  <div class="fixed top-0 left-0 h-full w-64 bg-blue-800 z-50 transform transition-transform duration-300 md:hidden"
+    [class.translate-x-0]="showMobileMenu" [class.-translate-x-full]="!showMobileMenu">
     <div class="p-6">
       <!-- Close Button -->
       <div class="flex justify-end mb-8">
-        <button 
-          class="text-2xl text-white hover:text-yellow-300"
-          (click)="toggleMobileMenu()"
-          aria-label="Close menu"
-        >
+        <button class="text-2xl text-white hover:text-yellow-300" (click)="toggleMobileMenu()" aria-label="Close menu">
           ×
         </button>
       </div>
-      
+
+      <!-- Cart Summary in Mobile Menu -->
+      <div class="mb-6 p-3 bg-blue-700 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span class="font-medium">My Cart</span>
+          </div>
+          <span class="bg-yellow-500 text-blue-900 px-2 py-1 rounded-full text-xs font-bold">
+            {{cartItemCount}} items
+          </span>
+        </div>
+        @if(cartTotalAmount > 0) {
+        <div class="mt-2 text-sm">
+          Total: ₹{{cartTotalAmount | number}}
+        </div>
+        }
+        <button
+          class="w-full mt-2 bg-green-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+          Checkout
+        </button>
+      </div>
+
       <!-- User Info -->
       <div class="mb-8">
-        <a 
-          [routerLink]="auth_Service.isAdmin() ? '/admin' : '/user-profile'" 
-          class="flex items-center space-x-3 mb-6"
-          (click)="toggleMobileMenu()"
-        >
+        <a [routerLink]="auth_Service.isAdmin() ? '/admin' : '/user-profile'" class="flex items-center space-x-3 mb-6"
+          (click)="toggleMobileMenu()">
           <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
             <span class="font-bold text-lg">{{ getUserInitials() }}</span>
           </div>
@@ -174,43 +270,35 @@
             </div>
           </div>
         </a>
-        
+
         @if(auth_Service.isLoggedIn()) {
-          <button 
-            class="w-full py-3 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-colors duration-200"
-            (click)="logOut(); toggleMobileMenu()"
-          >
-            Logout
-          </button>
+        <button class="w-full py-3 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-colors duration-200"
+          (click)="logOut(); toggleMobileMenu()">
+          Logout
+        </button>
         } @else {
-          <div class="space-y-3">
-            <a 
-              routerLink="/register" 
-              class="block w-full py-3 bg-blue-500 hover:bg-blue-700 rounded-lg font-medium text-center transition-colors duration-200"
-              (click)="toggleMobileMenu()"
-            >
-              Login
-            </a>
-            <a 
-              routerLink="/register" 
-              class="block w-full py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-medium text-center transition-colors duration-200"
-              (click)="toggleMobileMenu()"
-            >
-              Register
-            </a>
-          </div>
+        <div class="space-y-3">
+          <a routerLink="/register"
+            class="block w-full py-3 bg-blue-500 hover:bg-blue-700 rounded-lg font-medium text-center transition-colors duration-200"
+            (click)="toggleMobileMenu()">
+            Login
+          </a>
+          <a routerLink="/register"
+            class="block w-full py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-medium text-center transition-colors duration-200"
+            (click)="toggleMobileMenu()">
+            Register
+          </a>
+        </div>
         }
       </div>
-      
+
       <!-- Categories -->
       <div class="border-t border-blue-700 pt-6">
         <h3 class="font-bold text-lg mb-4 text-yellow-300">Categories</h3>
         <div class="space-y-2">
           <div *ngFor="let category of categoryList">
-            <button 
-              class="w-full text-left px-4 py-3 hover:bg-blue-700 rounded-lg transition-colors duration-200"
-              (click)="onCategoryClick(category); toggleMobileMenu()"
-            >
+            <button class="w-full text-left px-4 py-3 hover:bg-blue-700 rounded-lg transition-colors duration-200"
+              (click)="onCategoryClick(category); toggleMobileMenu()">
               {{category.name}}
             </button>
           </div>
@@ -219,3 +307,40 @@
     </div>
   </div>
 </header>
+
+<style>
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.2s ease-out;
+  }
+
+  /* Custom scrollbar */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+</style>

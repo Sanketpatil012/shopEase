@@ -80,9 +80,8 @@ export class AuthService {
   }
 
   logout(): void {
-   localStorage.clear();
+    localStorage.clear();
     this.currentUserSubject.next(null);
-
   }
 
   private loadStoredAuthData(): void {

@@ -13,6 +13,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AdminDashboardComponent } from './components/manage/admin-dashboard/admin-dashboard.component';
 import { adminGuard, authGuard } from './guards/auth-guard';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { OrderComponent } from './components/order/order.component';
 
 export const routes: Routes = [
   {
@@ -80,5 +81,8 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
-  },
+  } ,{
+     path:"orders" , 
+     component:OrderComponent,
+  }
 ];

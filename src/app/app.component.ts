@@ -3,6 +3,7 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,12 @@ import { FooterComponent } from './components/footer/footer.component';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  constructor(private _router: Router) {}
+  constructor(private _router: Router) {
+      this._router.events
+      .pipe(filter(event =>  event instanceof NavigationEnd)).subscribe(()=> {
+          window.scrollTo(0, 0)
+      })
+  }
   ngOnInit(): void {
     this._router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
